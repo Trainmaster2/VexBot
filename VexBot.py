@@ -78,6 +78,10 @@ async def on_ready():
     embed.set_footer(text='Make sure that you enter commands in the appropriate channel for your competition.')
     comps=eval(get('https://api.vexdb.io/v1/get_events?status=current&country=United%20States').content)['result']
     info=discord.Embed(title='Welcome to VexBot',description='{} {} currently avaliable.'.format(len(comps),'competitions-'[:-((len(comps)==1)+1)]),color=0xd9272e)
+    feedback=discord.Embed(title='Feedback',description='Please leave feedback to help improve this bot.',color=0xd9272e)
+    feedback.add_field(name='Reddit',value='https://www.reddit.com/r/vex/comments/846262/vexbot_discord_server/',inline=False)
+    feedback.add_field(name='VEX Forum',value='https://www.vexforum.com/index.php/32558-vexbot-discord-server',inline=False)
+    feedback.add_field(name='Github',value='https://github.com/Trainmaster2/VexBot',inline=False)
     for server in Client.servers:
         everyone=server.default_role
         perms=everyone.permissions
@@ -88,12 +92,14 @@ async def on_ready():
             if i.name=='info':
               await Client.purge_from(i)
               await Client.send_message(i,embed=info)
+              await Client.send_message(i,embed=feedback)
               infoFound=True
               continue
             await Client.delete_channel(i)
         if not infoFound:
             channel=await Client.create_channel(server, 'Info', (everyone,discord.PermissionOverwrite(send_messages=False)))
             await Client.send_message(channel,embed=info)
+            await Client.send_message(channel,embed=feedback)
         for i in comps:
             channel = await Client.create_channel(server,i['name'])
             await Client.edit_channel(channel,topic=i['sku'])
