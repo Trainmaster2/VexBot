@@ -65,6 +65,12 @@ def teamsEmbed(data,sku):
     embeds.append(embed.to_dict())        
     return embeds
 
+def awardEmbed(data):
+    event=eval(get('https://api.vexdb.io/v1/get_events?sku='+data['sku']).content)['result'][0]['name']
+    embed=discord.Embed(title=data['name'],description=event,color=0xd9272e)
+    embed.add_field(name='Team',value=data['team'],inline=True)
+    return embed
+
 @Client.event
 async def on_ready():
     print('Invite link: https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8\n'.format(Client.user.id))
@@ -75,6 +81,7 @@ async def on_ready():
     embed.add_field(name=prefix+'teams', value='Returns a list of matches for a team in a competition.', inline=False)
     embed.add_field(name=prefix+'match', value='Returns the current match in a competition.', inline=False)
     embed.add_field(name=prefix+'scored', value='Returns the most recent scored match for a competition.', inline=False)
+    embed.add_field(name=prefix+'awards',value='Returns a list of all given awards.',inline=False)
     embed.set_footer(text='Make sure that you enter commands in the appropriate channel for your competition.')
     comps=eval(get('https://api.vexdb.io/v1/get_events?status=current&country=United%20States').content)['result']
     info=discord.Embed(title='Welcome to VexBot',description='{} {} currently avaliable.'.format(len(comps),'competitions-'[:-((len(comps)==1)+1)]),color=0xd9272e)
@@ -152,5 +159,12 @@ async def on_message(msg):
                         await Client.send_message(msg.author,embed=discord.Embed.from_data(i))
                 else:
                     await Client.send_message(msg.author,content='No scored matches found.')
+            if cmd[0]=='awards':
+                data=eval(get('https://api.vexdb.io/v1/get_awards?sku='+sku).content)['result']
+                if len(data)>0:
+                    for i in data:
+                        await Client.send_message(msg.author,embed=awardEmbed(i))
+                else:
+                    await Client.send_message(msg.author,content='No awards found for this competition.')
 
 Client.run(token)
