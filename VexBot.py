@@ -78,7 +78,7 @@ async def on_ready():
     embed.add_field(name=prefix+'team [team #]', value='Returns information about a team.', inline=False)
     embed.add_field(name=prefix+'rank [team #]', value='Returns rank information about a team in a competition.', inline=False)
     embed.add_field(name=prefix+'matches [team #]', value='Returns a list of matches for a team in a competition.', inline=False)
-    embed.add_field(name=prefix+'teams', value='Returns a list of matches for a team in a competition.', inline=False)
+    embed.add_field(name=prefix+'teams', value='Returns a list of teams in a competition.', inline=False)
     embed.add_field(name=prefix+'match', value='Returns the current match in a competition.', inline=False)
     embed.add_field(name=prefix+'scored', value='Returns the most recent scored match for a competition.', inline=False)
     embed.add_field(name=prefix+'awards',value='Returns a list of all given awards.',inline=False)
