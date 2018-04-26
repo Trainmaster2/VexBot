@@ -32,7 +32,7 @@ def rankEmbed(data):
 
 def matchEmbed(data):
     event=eval(get('https://api.vexdb.io/v1/get_events?sku='+data['sku']).content)['result'][0]['name']
-    d=dt(data['scheduled'],'%Y-%m-%dT%H:%M:00+00:00')
+    d=dt.strptime(data['scheduled'],'%Y-%m-%dT%H:%M:00+00:00')
     date=d.strftime('%I:%M %p UTC on %b. %d, %Y')
     date='{}:{} {} on {}-{}-{}'.format(dt[3],dt[4],d.tzname(),dt[1],dt[2],dt[0])
     if data['round']>2:
