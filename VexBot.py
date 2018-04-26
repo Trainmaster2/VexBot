@@ -2,7 +2,7 @@ import asyncio,discord,os
 from discord.ext.commands import Bot
 from requests import get
 from urllib.parse import urlencode as ue
-from dateutil.parser import parse as dparse
+from datetime import datetime as dt
 
 Client = Bot('=')
 token='BOT TOKEN HERE'
@@ -32,8 +32,8 @@ def rankEmbed(data):
 
 def matchEmbed(data):
     event=eval(get('https://api.vexdb.io/v1/get_events?sku='+data['sku']).content)['result'][0]['name']
-    d=dparse(data['scheduled'])
-    dt=d.timetuple()
+    d=dt(data['scheduled'],'%Y-%m-%dT%H:%M:00+00:00')
+    date=d.strftime('%I:%M %p UTC on %b. %d, %Y')
     date='{}:{} {} on {}-{}-{}'.format(dt[3],dt[4],d.tzname(),dt[1],dt[2],dt[0])
     if data['round']>2:
         match='{} {}-{}'.format(matchDict[data['round']],data['instance'],data['matchnum'])
