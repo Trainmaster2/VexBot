@@ -1,7 +1,8 @@
-import asyncio,discord
+import asyncio,discord,os
 from discord.ext.commands import Bot
 from requests import get
 from urllib.parse import urlencode as ue
+from dateutil.parser import parse as dparse
 
 Client = Bot('=')
 token='BOT TOKEN HERE'
@@ -31,6 +32,9 @@ def rankEmbed(data):
 
 def matchEmbed(data):
     event=eval(get('https://api.vexdb.io/v1/get_events?sku='+data['sku']).content)['result'][0]['name']
+    d=dparse(data['scheduled'])
+    dt=d.timetuple()
+    date='{}:{} {} on {}-{}-{}'.format(dt[3],dt[4],d.tzname(),dt[1],dt[2],dt[0])
     if data['round']>2:
         match='{} {}-{}'.format(matchDict[data['round']],data['instance'],data['matchnum'])
     else:
@@ -47,6 +51,8 @@ def matchEmbed(data):
     embed.add_field(name='Blue 2',value=teams[1][1],inline=True)
     embed.add_field(name='Blue 3',value=teams[1][2],inline=True)
     if data['scored']:embed.add_field(name='Blue Score',value=data['bluescore'],inline=False)
+    embed.add_field(name='Field',value=data['field'],inline=True)
+    embed.add_field(name='Time',value=date,inline=True)
     return embed
 
 def teamsEmbed(data,sku):
@@ -79,8 +85,8 @@ async def on_ready():
     embed.add_field(name=prefix+'rank [team #]', value='Returns rank information about a team in a competition.', inline=False)
     embed.add_field(name=prefix+'matches [team #]', value='Returns a list of matches for a team in a competition.', inline=False)
     embed.add_field(name=prefix+'teams', value='Returns a list of teams in a competition.', inline=False)
-    embed.add_field(name=prefix+'match', value='Returns the current match in a competition.', inline=False)
-    embed.add_field(name=prefix+'scored', value='Returns the most recent scored match for a competition.', inline=False)
+    embed.add_field(name=prefix+'match (team #)', value='Returns the current match in a competition. Optionally limit to a team.', inline=False)
+    embed.add_field(name=prefix+'scored (team #)', value='Returns the most recent scored match for a competition. Optionally limit to a team.', inline=False)
     embed.add_field(name=prefix+'awards',value='Returns a list of all given awards.',inline=False)
     embed.set_footer(text='Make sure that you enter commands in the appropriate channel for your competition.')
     comps=eval(get('https://api.vexdb.io/v1/get_events?status=current&country=United%20States').content)['result']
@@ -141,13 +147,15 @@ async def on_message(msg):
                 else:
                     await Client.send_message(msg.author,content='No matches found for Team '+cmd[1].upper()+'.')
             if cmd[0]=='match':
-                data=eval(get('https://api.vexdb.io/v1/get_matches?scored=0&sku='+sku).content)['result']
+                cmd.append('')
+                data=eval(get('https://api.vexdb.io/v1/get_matches?scored=0&'+ue((('sku',sku),('team',cmd[1])))).content)['result']
                 if len(data)>0:
                     await Client.send_message(msg.author,embed=matchEmbed(data[0]))
                 else:
                     await Client.send_message(msg.author,content='No upcoming matches found.')
             if cmd[0]=='scored':
-                data=eval(get('https://api.vexdb.io/v1/get_matches?scored=1&sku='+sku).content)['result']
+                cmd.append('')
+                data=eval(get('https://api.vexdb.io/v1/get_matches?scored=1&'+ue((('sku',sku),('team',cmd[1])))).content)['result']
                 if len(data)>0:
                     await Client.send_message(msg.author,embed=matchEmbed(data[-1]))
                 else:
@@ -158,7 +166,7 @@ async def on_message(msg):
                     for i in teamsEmbed(data,sku):
                         await Client.send_message(msg.author,embed=discord.Embed.from_data(i))
                 else:
-                    await Client.send_message(msg.author,content='No scored matches found.')
+                    await Client.send_message(msg.author,content='No teams found.')
             if cmd[0]=='awards':
                 data=eval(get('https://api.vexdb.io/v1/get_awards?sku='+sku).content)['result']
                 if len(data)>0:
